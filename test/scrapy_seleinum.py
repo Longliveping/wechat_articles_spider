@@ -60,7 +60,6 @@ def open_link(nickname, start_page=1):
     for handle in driver.window_handles:
         if handle != driver.current_window_handle:
             driver.switch_to.window(handle)
-           
 
     # 点击超链接
     driver.find_element(By.XPATH,'//*[@id="js_editor_insertlink"]').click()
@@ -123,7 +122,7 @@ def open_link(nickname, start_page=1):
             
             if current_page >= total_pages:
                 # 保存csv
-                data_file = "{}_p{}.csv".format(nickname, current_page)
+                data_file = "data\{}_p{}.csv".format(nickname, current_page)
                 ic(data_file)
                 with open(data_file, "a") as f:
                     f.write("\n".join(url_list))
@@ -139,7 +138,7 @@ def open_link(nickname, start_page=1):
             time.sleep(5+current_page%5)
         except:
             # 保存csv
-            data_file = "{}_p{}.csv".format(nickname,current_page)
+            data_file = "data\{}_p{}.csv".format(nickname,current_page)
             ic(data_file)
             with open(data_file, "a") as f:
                 f.write("\n".join(url_list))
@@ -161,7 +160,7 @@ def get_url_title(html):
 # 用webdriver启动谷歌浏览器
 driver = webdriver.Chrome()
 
-nickname = "第二大脑与知识管理"  # 公众号名称
+nickname = "李继刚"  # 公众号名称
 start_page = 0  # 开始页码
 ic(login())
 ic(open_link(nickname, start_page))
