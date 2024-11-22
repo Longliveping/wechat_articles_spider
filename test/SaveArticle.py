@@ -56,7 +56,7 @@ def save_article(conn, article_name, article_url, content, mp_name, created):
         print(e)
 
 def get_url_from_csv():# 指定CSV文件路径
-    csv_file_path = './data_p141.csv'
+    csv_file_path = './第二大脑与知识管理_p63.csv'
 
     # 使用pandas的read_csv函数读取CSV文件
     df = pd.read_csv(csv_file_path)
@@ -91,11 +91,12 @@ def update_article():
         title = ""
         url = ""
         content = ""
-        mp_name = "L先生说"
+        mp_name = "第二大脑与知识管理"
         now = datetime.now()  # 日期字符串
         created = now.strftime("%Y-%m-%d %H:%M:%S")  # 转换为datetime对象
         
-        urls = get_url_from_db(conn, mp_name)
+        # urls = get_url_from_db(conn, mp_name)
+        urls = get_url_from_csv()
         for url in urls:
             title, content = get_article_content(url)
             # 保存文章
@@ -122,10 +123,13 @@ def export_articles(mp_name):
             c.execute("SELECT title,content FROM articles WHERE mp_name = ?", (mp_name,))
             # 获取查询结果
             records = c.fetchall()
+            ic(len(records))
+
             for rec in records[:]:
-                filename = rec[0].replace(" ", "").replace("\n","").replace("|","").replace("\\","")
-                ic(filename)
+                filename = rec[0].replace(" ", "").replace("\n","").replace("|","").replace("\\","").replace("/","").replace("<","")
+                # ic(filename)
                 file_path = os.path.join(mp_name, filename[:30])
+                ic(file_path)
                 rec1 = rec[1].replace("\n", "\n- ")
                 with open(f'{file_path}.md', 'w', encoding='utf-8') as f:
                     f.write(f'{rec1}')
@@ -145,7 +149,7 @@ def get_article_content(url):
     ic(url)
 
     # 发送GET请求
-    response = requests.get(url)
+    response = requests.get(url, verify=False)
 
     # 检查请求是否成功
     if response.status_code == 200:
@@ -205,7 +209,7 @@ def moc_create(mp_name):
             records = c.fetchall()
             file_path = os.path.join(mp_name, f'{mp_name}_moc')
             for rec in records[:]:
-                line = rec[0][:30].replace(" ", "").replace("\n","").replace("|","").replace("\\","")
+                line = rec[0][:30].replace(" ", "").replace("\n","").replace("|","").replace("\\","").replace("/","").replace("<","")
                 if (len(line)):
                     line = f'[[{line}]]\n'
                     with open(f'{file_path}.md', 'a', encoding='utf-8') as f:
@@ -220,11 +224,9 @@ def moc_create(mp_name):
         print("Error! cannot create the database connection.")
 
 if __name__ == '__main__':
-    # main
 #    update_article() 
-    pass
-    export_articles("L先生说")
-    # moc_create("L先生说")
+    export_articles("第二大脑与知识管理")
+    moc_create("第二大脑与知识管理")
 
     
     

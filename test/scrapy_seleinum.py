@@ -64,7 +64,7 @@ def open_link(nickname, start_page=1):
 
     # 点击超链接
     driver.find_element(By.XPATH,'//*[@id="js_editor_insertlink"]').click()
-    time.sleep(5)
+    time.sleep(10)
     # 选择其他公众号
     driver.find_element(By.XPATH,'//*[@id="vue_app"]/div[2]/div[1]/div/div[2]/div[2]/form[1]/div[4]/div/div/p/div/button').click()
     # 输入公众号名称
@@ -74,12 +74,12 @@ def open_link(nickname, start_page=1):
     input_name.clear()
     input_name.send_keys(nickname)
     input_name.send_keys(Keys.ENTER)
-    time.sleep(1)
+    time.sleep(3)
     # 点击第一个公众号
     driver.find_element(By.XPATH,
         '//*[@id="vue_app"]/div[2]/div[1]/div/div[2]/div[2]/form[1]/div[4]/div/div/div/div[2]/ul/li[1]/div[1]'
     ).click()
-    time.sleep(1)
+    time.sleep(3)
 
     # pages
     total_pages = driver.find_element(By.XPATH, 
@@ -97,9 +97,10 @@ def open_link(nickname, start_page=1):
     driver.find_element(By.XPATH, '//*[@id="vue_app"]/div[2]/div[1]/div/div[2]/div[2]/form[1]/div[5]/div/div/div[3]/span[2]/input').send_keys(Keys.END, Keys.BACK_SPACE)
     driver.find_element(By.XPATH, '//*[@id="vue_app"]/div[2]/div[1]/div/div[2]/div[2]/form[1]/div[5]/div/div/div[3]/span[2]/input').send_keys(current_page)
     driver.find_element(By.XPATH, '//*[@id="vue_app"]/div[2]/div[1]/div/div[2]/div[2]/form[1]/div[5]/div/div/div[3]/span[2]/a').click()
-    time.sleep(2)
+    time.sleep(5)
     # 开始采集
     url_list = []
+    url_list.append('url')
     
     while True:
         try:
@@ -114,7 +115,7 @@ def open_link(nickname, start_page=1):
             
             for i in range(count):
                 href = driver.find_element(By.XPATH,
-                    '//*[@id="vue_app"]/div[2]/div[1]/div/div[2]/div[2]/form[1]/div[5]/div/div/div[2]/div/div/label[{}]/span[2]/a'.format(i+1)
+                    '//*[@id="vue_app"]/div[2]/div[1]/div/div[2]/div[2]/form[1]/div[5]/div/div/div[2]/div/div/label[{}]/div/div[2]/span[2]/a'.format(i+1)
                     )
                 url = href.get_attribute("href")
                 ic(url)
@@ -122,7 +123,7 @@ def open_link(nickname, start_page=1):
             
             if current_page >= total_pages:
                 # 保存csv
-                data_file = "data_p{}.csv".format(current_page)
+                data_file = "{}_p{}.csv".format(nickname, current_page)
                 ic(data_file)
                 with open(data_file, "a") as f:
                     f.write("\n".join(url_list))
@@ -135,10 +136,10 @@ def open_link(nickname, start_page=1):
             driver.find_element(By.XPATH, '//*[@id="vue_app"]/div[2]/div[1]/div/div[2]/div[2]/form[1]/div[5]/div/div/div[3]/span[2]/input').send_keys(current_page) 
             driver.find_element(By.XPATH, '//*[@id="vue_app"]/div[2]/div[1]/div/div[2]/div[2]/form[1]/div[5]/div/div/div[3]/span[2]/a').click()
             
-            time.sleep(3+current_page%5)
+            time.sleep(5+current_page%5)
         except:
             # 保存csv
-            data_file = "data_p{}.csv".format(current_page)
+            data_file = "{}_p{}.csv".format(nickname,current_page)
             ic(data_file)
             with open(data_file, "a") as f:
                 f.write("\n".join(url_list))
@@ -160,7 +161,7 @@ def get_url_title(html):
 # 用webdriver启动谷歌浏览器
 driver = webdriver.Chrome()
 
-nickname = "L先生说"  # 公众号名称
-start_page = 111  # 开始页码
+nickname = "第二大脑与知识管理"  # 公众号名称
+start_page = 0  # 开始页码
 ic(login())
 ic(open_link(nickname, start_page))
