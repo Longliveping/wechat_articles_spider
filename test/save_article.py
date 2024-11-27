@@ -108,7 +108,8 @@ def update_article_content(nickname,csv_name):
         print("Error! cannot create the database connection.")
 
 def export_articles(nickname):
-    os.makedirs(nickname, exist_ok=True)
+    dir_path = os.path.join('data', nickname)
+    os.makedirs(dir_path, exist_ok=True)
     database = "./mp.db"
 
     # 创建数据库连接
@@ -116,25 +117,24 @@ def export_articles(nickname):
 
     if conn is not None:
         """从数据库中读取特定nickname的url记录"""
-        try:
-            c = conn.cursor()
-            # 执行SELECT语句，添加WHERE子句来过滤nickname
-            c.execute("SELECT title,content FROM articles WHERE mp_name = ?", (nickname,))
-            # 获取查询结果
-            records = c.fetchall()
-            ic(len(records))
+        c = conn.cursor()
+        # 执行SELECT语句，添加WHERE子句来过滤nickname
+        c.execute("SELECT title,content FROM articles WHERE mp_name = ?", (nickname,))
+        # 获取查询结果
+        records = c.fetchall()
+        ic(len(records))
 
-            for rec in records[:]:
-                filename = rec[0].replace(" ", "").replace("\n","").replace("|","").replace("\\","").replace("/","").replace("<","")
-                ic(filename)
-                dir_path = os.path.join('data', nickname)
-                file_path = os.path.join(dir_path, filename[:30])
-                rec1 = rec[1].replace("\n", "\n- ")
+        for rec in records[:]:
+            filename = rec[0].replace(" ", "").replace("\n","").replace("|","").replace("\\","").replace("/","").replace("<","").replace("?","")
+            dir_path = os.path.join('data', nickname)
+            file_path = os.path.join(dir_path, filename[:30])
+            rec1 = rec[1].replace("\n", "\n- ")
+            try:
                 with open(f'{file_path}.md', 'w', encoding='utf-8') as f:
                     f.write(f'{rec1}')
-                
-        except Error as e:
-            print(e)
+                ic(file_path)
+            except Error as e:
+                ic(file_path,e)
 
         # 关闭连接
         conn.close()
@@ -159,7 +159,8 @@ def get_article_content(url):
         # \s* 匹配任意数量的空白字符
         # [^:]* 匹配冒号前的所有字符
         # (.*) 捕获冒号及之后的所有字符
-        pattern = r'Title:\s*([^:]*)(?=(\s*$|\n))'
+        # pattern = r'Title:\s*([^:]*)(?=(\s*$|\n))'
+        pattern = r'Title:\s*(.*(?:\n|$))'
 
         # 使用re.search()查找匹配项
         match = re.search(pattern, content)
@@ -192,7 +193,6 @@ def get_url_from_db(conn, nickname):
         return None
 
 def moc_create(nickname):
-    os.makedirs(nickname, exist_ok=True)
     database = "./mp.db"
 
     # 创建数据库连接
@@ -206,10 +206,10 @@ def moc_create(nickname):
             c.execute("SELECT title FROM articles WHERE mp_name = ?", (nickname,))
             # 获取查询结果
             records = c.fetchall()
-            dir_path = os.path.join('data', nickname)
-            file_path = os.path.join(dir_path, f'{nickname}_moc')
+            file_path = os.path.join('data', f'{nickname}',f'moc_{nickname}')
+            ic(file_path)
             for rec in records[:]:
-                line = rec[0][:30].replace(" ", "").replace("\n","").replace("|","").replace("\\","").replace("/","").replace("<","")
+                line = rec[0][:30].replace(" ", "").replace("\n","").replace("|","").replace("\\","").replace("/","").replace("<","").replace('?', '')
                 if (len(line)):
                     line = f'[[{line}]]\n'
                     with open(f'{file_path}.md', 'a', encoding='utf-8') as f:
@@ -223,12 +223,52 @@ def moc_create(nickname):
     else:
         print("Error! cannot create the database connection.")
 
+def export_articles_doc(nickname):
+    dir_path = os.path.join('data', nickname)
+    os.makedirs(dir_path, exist_ok=True)
+    database = "./mp.db"
+
+    conn = create_connection(database)
+    if conn is not None:
+        try:
+            c = conn.cursor()
+            c.execute("SELECT title, content FROM articles WHERE mp_name = ?", (nickname,))
+            records = c.fetchall()
+            
+            try:
+                from docx import Document
+            except ImportError:
+                import subprocess
+                import sys
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "python-docx"])
+                from docx import Document
+            
+            for title, content in records:
+                filename = re.sub(r'[^\w\-_\. ]', '', title)[:30]
+                file_path = os.path.join(dir_path, f"{filename}.docx")
+                
+                doc = Document()
+                doc.add_heading(title, 0)
+                doc.add_paragraph(content)
+                doc.save(file_path)
+                
+            print(f"Exported {len(records)} articles for {nickname}")
+        except Error as e:
+            print(f"Database error: {e}")
+        finally:
+            conn.close()
+    else:
+        print("Error! Cannot create the database connection.")
+
+
+
 if __name__ == '__main__':
-    nickname = "李继刚"
-    csv_name = nickname +'_p14.csv'
+    nickname = "L先生说"
+    csv_name = nickname +'_p3.csv'
     update_article_content(nickname, csv_name) 
     export_articles(nickname)
     moc_create(nickname)
+    export_articles_doc(nickname)
 
     
     

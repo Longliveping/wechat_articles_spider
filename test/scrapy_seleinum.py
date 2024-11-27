@@ -117,10 +117,19 @@ def open_link(nickname, start_page=1):
                     '//*[@id="vue_app"]/div[2]/div[1]/div/div[2]/div[2]/form[1]/div[5]/div/div/div[2]/div/div/label[{}]/div/div[2]/span[2]/a'.format(i+1)
                     )
                 url = href.get_attribute("href")
-                ic(url)
+                
+                title = driver.find_element(By.XPATH,
+                    '//*[@id="vue_app"]/div[2]/div[1]/div/div[2]/div[2]/form[1]/div[5]/div/div/div[2]/div/div/label[{}]/div/div[1]/span[2]'.format(i+1)
+                ).text
+                
+                pub_date = driver.find_element(By.XPATH,
+                    '//*[@id="vue_app"]/div[2]/div[1]/div/div[2]/div[2]/form[1]/div[5]/div/div/div[2]/div/div/label[{}]/div/div[2]/span[1]'.format(i+1)
+                ).text 
+                
+                ic(url, title, pub_date)
                 url_list.append(url)
             
-            if current_page >= total_pages:
+            if current_page >= total_pages or (current_page >= end_page and end_page > 0):
                 # 保存csv
                 data_file = "data\{}_p{}.csv".format(nickname, current_page)
                 ic(data_file)
@@ -160,7 +169,8 @@ def get_url_title(html):
 # 用webdriver启动谷歌浏览器
 driver = webdriver.Chrome()
 
-nickname = "李继刚"  # 公众号名称
+nickname = "L先生说"  # 公众号名称
 start_page = 0  # 开始页码
+end_page = 1  # 结束页码
 ic(login())
 ic(open_link(nickname, start_page))
